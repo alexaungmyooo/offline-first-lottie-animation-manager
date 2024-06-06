@@ -85,3 +85,6 @@ coverage/
 
 # Nuxt.js build output
 .nuxt/
+
+# Ignore uploads folder
+uploads/
