@@ -13,9 +13,9 @@ const resolvers = {
       const where: any = {};
       if (query) {
         where.OR = [
-          { title: { contains: query, mode: 'insensitive' } },
-          { description: { contains: query, mode: 'insensitive' } },
-          { metadata: { contains: query } },
+          { title: { contains: query.toLowerCase() } },
+          { description: { contains: query.toLowerCase() } },
+          { metadata: { contains: query.toLowerCase() } },
         ];
       }
       if (category) {
@@ -70,7 +70,6 @@ const resolvers = {
         },
       });
     }
-    
   },
 };
 

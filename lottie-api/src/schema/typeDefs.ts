@@ -1,4 +1,4 @@
-// src/schema/schema.graphql.ts
+// src/schema/typeDefs.ts
 import { gql } from 'apollo-server-express';
 
 const typeDefs = gql`

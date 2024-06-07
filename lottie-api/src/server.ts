@@ -10,7 +10,6 @@ const startServer = async () => {
   const httpServer = http.createServer(app);
 
   const { server } = await startApolloServer(app);
-  server.applyMiddleware({ app, path: '/graphql' });
 
   httpServer.listen(SERVER_PORT, () => {
     console.info(`🚀 Server ready at http://localhost:${SERVER_PORT}${server.graphqlPath}`);
