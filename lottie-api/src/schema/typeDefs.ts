@@ -5,7 +5,7 @@ const typeDefs = gql`
   scalar Upload
 
   type Animation {
-    id: Int!
+    id: String!
     title: String!
     description: String!
     metadata: String!

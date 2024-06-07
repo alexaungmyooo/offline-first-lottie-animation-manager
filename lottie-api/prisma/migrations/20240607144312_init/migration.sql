@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE `Animation` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NOT NULL,
     `tags` JSON NOT NULL,

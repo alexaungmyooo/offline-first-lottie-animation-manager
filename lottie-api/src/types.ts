@@ -25,7 +25,7 @@ export interface SearchAnimationsArgs {
 }
 
 export interface GetAnimationArgs {
-  id: number;
+  id: string;
 }
 
 export interface FileUpload {
