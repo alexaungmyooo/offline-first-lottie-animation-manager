@@ -26,7 +26,7 @@ const animationsSlice = createSlice({
       if ('file' in action.payload) {
         const offlineAnimation = action.payload as OfflineAnimation;
         const animation: LottieAnimation = {
-          id: offlineAnimation.id || Date.now(), // Temporary ID
+          id: offlineAnimation.id, // Temporary ID
           title: offlineAnimation.title,
           description: '',
           tags: [],

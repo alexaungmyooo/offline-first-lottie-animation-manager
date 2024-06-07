@@ -1,6 +1,6 @@
 // src/types/index.ts
 export interface LottieAnimation {
-  id: number;
+  id: string;
   title: string;
   description: string;
   tags: string[];
@@ -13,7 +13,7 @@ export interface LottieAnimation {
 }
 
 export interface PendingUpload {
-  id?: number;
+  id: string;
   title: string;
   description?: string;
   tags?: string[];
@@ -25,7 +25,7 @@ export interface PendingUpload {
 }
 
 export interface OfflineAnimation {
-  id?: number;
+  id: string;
   title: string;
   description?: string;
   tags?: string[];

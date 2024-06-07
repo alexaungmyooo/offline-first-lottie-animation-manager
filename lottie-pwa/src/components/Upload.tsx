@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { addPendingUpload, addAnimation as addAnimationToDB, addLottieFile } from '../utils/indexedDB';
 import { RootState } from './../store/store';
 import { addAnimationState } from './../store/animationsSlice';
-import { PendingUpload } from './../types';
+import { LottieAnimation, PendingUpload } from './../types';
 import { customFetch } from '../utils/customFetch';
 // import { useNavigate } from 'react-router-dom';
 
@@ -41,7 +41,12 @@ const Upload: React.FC = () => {
       const fileData = JSON.parse(event.target?.result as string);
 
       const filename = file.name;
-      const animationData: PendingUpload = {
+      const uniqueID = String(Date.now());
+      const createdAt = new Date().toISOString();
+      const updatedAt = createdAt;
+
+      const pendingUpload: PendingUpload = {
+        id: uniqueID, // Assign a unique ID
         title,
         metadata,
         description,
@@ -52,10 +57,24 @@ const Upload: React.FC = () => {
         filename,
       };
 
+      const animationData: LottieAnimation = {
+        id: uniqueID,
+        title,
+        description,
+        tags,
+        metadata,
+        url: '',
+        createdAt,
+        updatedAt,
+        duration,
+        category,
+      };
+
       if (offline) {
-        await addPendingUpload(animationData);
+        await addPendingUpload(pendingUpload);
         dispatch(addAnimationState(animationData));
-        await addLottieFile(String(Date.now()), fileData); // Use a unique ID or timestamp
+        await addAnimationToDB(animationData); // Save to IndexedDB
+        await addLottieFile(uniqueID, fileData); // Use a unique ID or timestamp
         setSuccessMessage('Animation uploaded offline. It will be synced when you are online.');
       } else {
         const operations = {
