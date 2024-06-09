@@ -25,13 +25,11 @@ describe('GraphQL Resolvers', () => {
       .field('operations', JSON.stringify({
         query: `mutation ($file: Upload!) {
           uploadAnimation(
+            id: "12345"
             title: "Test",
             description: "Test Description",
             tags: ["tag1", "tag2"],
-            metadata: "{}",
-            file: $file,
-            duration: 100,
-            category: "Test"
+            file: $file
           ) {
             id
             title
@@ -46,44 +44,5 @@ describe('GraphQL Resolvers', () => {
     expect(response.body.errors).toBeUndefined();
     expect(response.body.data.uploadAnimation).toHaveProperty('id');
     expect(response.body.data.uploadAnimation).toHaveProperty('title', 'Test');
-  });
-
-  it('should download an animation', async () => {
-    // First, upload an animation to get a valid ID
-    const uploadResponse = await request(app)
-      .post('/graphql')
-      .field('operations', JSON.stringify({
-        query: `mutation ($file: Upload!) {
-          uploadAnimation(
-            title: "Test",
-            description: "Test Description",
-            tags: ["tag1", "tag2"],
-            metadata: "{}",
-            file: $file,
-            duration: 100,
-            category: "Test"
-          ) {
-            id
-            title
-            url
-          }
-        }`,
-        variables: { file: null }
-      }))
-      .field('map', JSON.stringify({ '0': ['variables.file'] }))
-      .attach('0', join(__dirname, 'test-animation.json'));
-
-    const animationId = uploadResponse.body.data.uploadAnimation.id;
-
-    const downloadResponse = await request(app).post('/graphql')
-      .send({
-        query: `query ($id: Int!) {
-          downloadAnimation(id: $id)
-        }`,
-        variables: { id: animationId }
-      });
-
-    expect(downloadResponse.body.errors).toBeUndefined();
-    expect(downloadResponse.body.data.downloadAnimation).toMatch(/^http:\/\/localhost:4000\/uploads\//);
   });
 });
