@@ -1,43 +1,56 @@
 // src/resolvers/index.ts
 import { createWriteStream, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import { v4 as uuidv4 } from 'uuid';
+
 import { GraphQLUpload } from 'graphql-upload-ts';
-import { Context, UploadAnimationArgs, SearchAnimationsArgs, GetAnimationArgs } from '../types';
+import { Context, UploadAnimationArgs, SearchAnimationsArgs, GetAnimationArgs, AnimationData } from '../types';
+
+const extractMetadata = (jsonData: any) => {
+  return {
+    v: jsonData.v,
+    fr: jsonData.fr,
+    ip: jsonData.ip,
+    op: jsonData.op,
+    w: jsonData.w,
+    h: jsonData.h,
+    nm: jsonData.nm,
+    ddd: jsonData.ddd,
+    assets: jsonData.assets,
+    layers: jsonData.layers,
+  };
+};
 
 const resolvers = {
   Upload: GraphQLUpload,
 
   Query: {
     searchAnimations: async (_: any, args: SearchAnimationsArgs, context: Context) => {
-      const { query, category, tags } = args;
+      const { query, tags } = args;
       const where: any = {};
       if (query) {
         where.OR = [
           { title: { contains: query.toLowerCase() } },
           { description: { contains: query.toLowerCase() } },
-          { metadata: { contains: query.toLowerCase() } },
         ];
       }
-      if (category) {
-        where.category = category;
-      }
+      
       if (tags) {
         where.tags = { hasSome: tags };
       }
 
-      return context.prisma.animation.findMany({ where });
+      const animations = await context.prisma.animation.findMany({ where });
+
+
+      return animations.map(animation => ({
+        ...animation,
+        // metadata: JSON.stringify(animation.metadata)
+      }));
     },
     getAnimation: async (_: any, args: GetAnimationArgs, context: Context) => {
       return context.prisma.animation.findUnique({
         where: { id: args.id },
       });
-    },
-    downloadAnimation: async (_: any, args: GetAnimationArgs, context: Context) => {
-      const animation = await context.prisma.animation.findUnique({
-        where: { id: args.id },
-      });
-      if (!animation) throw new Error('Animation not found');
-      return animation.url;
     },
     animationsSince: async (_: any, args: { lastSync: string }, context: Context) => {
 
@@ -55,32 +68,49 @@ const resolvers = {
 
   Mutation: {
     uploadAnimation: async (_: any, args: UploadAnimationArgs, context: Context) => {
-      // Destructure the file from args
-      const { createReadStream, filename } = await args.file;
+      const { title, description, tags, file } = args;
+      const { createReadStream, filename, mimetype } = await file;
       const uploadsDir = join(__dirname, '../../uploads');
       if (!existsSync(uploadsDir)) {
         mkdirSync(uploadsDir);
       }
-      const path = join(uploadsDir, filename);
+      const uuid = uuidv4();
+      const newFilename = `${uuid}-${filename}`;
+      const fileLocation = join(uploadsDir, newFilename);
+
+      // Save the file to the file system
       await new Promise((resolve, reject) => {
-        const writeStream = createWriteStream(path);
+        const writeStream = createWriteStream(fileLocation);
         createReadStream().pipe(writeStream);
         writeStream.on('finish', resolve);
         writeStream.on('error', reject);
       });
 
-      const url = `http://localhost:4000/uploads/${filename}`;
-      const data = {
-        title: args.title,
-        description: args.description,
-        tags: args.tags,
-        metadata: args.metadata,
-        url,
-        duration: args.duration,
-        category: args.category,
-        ...(args.id && { id: args.id }), // Conditionally add id if it exists
-      };
-      return context.prisma.animation.create({ data });
+      // Extract metadata from the JSON file
+      const fileContent: string = await new Promise((resolve, reject) => {
+        const chunks: any[] = [];
+        createReadStream()
+          .on('data', (chunk) => chunks.push(chunk))
+          .on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
+          .on('error', reject);
+      });
+
+      const jsonData = JSON.parse(fileContent);
+      const metadata = extractMetadata(jsonData);
+
+      const baseUrl = process.env.BASE_URL || 'http://localhost:4000';
+      const url = `${baseUrl}/uploads/${newFilename}`;
+
+      // Create the animation record in the database
+      return context.prisma.animation.create({
+        data: {
+          title,
+          description,
+          tags: tags, // Store tags as JSON
+          metadata: jsonData,
+          url,
+        },
+      });
 
     }
   },

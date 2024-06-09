@@ -34,7 +34,7 @@ app.use(
 console.log(path.join(__dirname, '../uploads'));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); // Adjust the path accordingly
 
-app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10, overrideSendResponse: false }));
+app.use(graphqlUploadExpress({ maxFileSize: 20000000, maxFiles: 10, overrideSendResponse: false }));
 
 const startApolloServer = async (app: express.Express) => {
   const server = new ApolloServer({

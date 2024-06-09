@@ -1,39 +1,38 @@
 // src/schema/typeDefs.ts
-import { gql } from 'apollo-server-express';
+import { gql } from "apollo-server-express";
 
 const typeDefs = gql`
   scalar Upload
+  scalar JSON
+  scalar DateTime
 
   type Animation {
-    id: String!
+    id: ID!
     title: String!
-    description: String!
-    metadata: String!
-    url: String!
-    duration: Int!
-    category: String!
-    tags: [String!]!
-    createdAt: String!
-    updatedAt: String! 
+    description: String
+    tags: [String!]! 
+    metadata: JSON
+    url: String
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   type Query {
-    searchAnimations(query: String, category: String, tags: [String]): [Animation]
+    searchAnimations(
+      query: String
+      tags: [String]
+    ): [Animation]
     getAnimation(id: Int!): Animation
-    downloadAnimation(id: Int!): String
-    animationsSince(lastSync: String!): [Animation!]!  
+    animationsSince(lastSync: String!): [Animation!]!
   }
 
   type Mutation {
     uploadAnimation(
       id: String!
-      title: String!, 
-      description: String!, 
-      tags: [String!]!, 
-      metadata: String!, 
-      file: Upload!, 
-      duration: Int!, 
-      category: String!
+      title: String!
+      description: String!
+      tags: [String!]!
+      file: Upload!
     ): Animation
   }
 `;

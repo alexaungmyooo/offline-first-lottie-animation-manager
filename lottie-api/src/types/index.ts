@@ -13,15 +13,11 @@ export interface UploadAnimationArgs {
   title: string;
   description: string;
   tags: string[];
-  metadata: string;
   file: Promise<FileUpload>;
-  duration: number;
-  category: string;
 }
 
 export interface SearchAnimationsArgs {
   query?: string;
-  category?: string;
   tags?: string[];
 }
 
@@ -34,4 +30,36 @@ export interface FileUpload {
   mimetype: string;
   encoding: string;
   createReadStream: () => NodeJS.ReadableStream;
+}
+
+
+export interface AnimationData {
+  v: string; // Lottie version
+  fr: number; // Frame rate
+  ip: number; // In point
+  op: number; // Out point
+  w: number; // Width
+  h: number; // Height
+  nm: string; // Name
+  ddd: number; // 3D or not
+  assets: Array<Asset>;
+  layers: Array<Layer>;
+  // Add other properties as needed
+}
+
+interface Asset {
+  id: string;
+  // Define other properties based on your Lottie JSON structure
+}
+
+interface Layer {
+  ty: number; // Layer type
+  nm: string; // Layer name
+  ks: object; // Transform properties
+  ao: number; // Auto-orient
+  ip: number; // In point
+  op: number; // Out point
+  st: number; // Start time
+  bm: number; // Blending mode
+  // Add other properties as needed
 }
