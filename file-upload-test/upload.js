@@ -13,10 +13,7 @@ const uploadFile = async (filePath) => {
         title: "Test",
         description: "Test Description",
         tags: ["tag1", "tag2"],
-        metadata: "{}",
-        file: $file,
-        duration: 100,
-        category: "Test"
+        file: $file
       ) {
         id
         title
