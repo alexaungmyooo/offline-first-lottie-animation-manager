@@ -1,4 +1,4 @@
-// src/types.ts
+// src/types/index.ts
 import { PrismaClient } from '@prisma/client';
 import { Request, Response } from 'express';
 
@@ -9,6 +9,7 @@ export interface Context {
 }
 
 export interface UploadAnimationArgs {
+  id?: string;
   title: string;
   description: string;
   tags: string[];

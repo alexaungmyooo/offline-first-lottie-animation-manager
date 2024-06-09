@@ -39,6 +39,18 @@ const resolvers = {
       if (!animation) throw new Error('Animation not found');
       return animation.url;
     },
+    animationsSince: async (_: any, args: { lastSync: string }, context: Context) => {
+
+      const { lastSync } = args;
+      console.log("AnimationsSince ", new Date(lastSync));
+      return context.prisma.animation.findMany({
+        where: {
+          updatedAt: {
+            gte: new Date(lastSync),
+          },
+        },
+      });
+    },
   },
 
   Mutation: {
@@ -58,17 +70,18 @@ const resolvers = {
       });
 
       const url = `http://localhost:4000/uploads/${filename}`;
-      return context.prisma.animation.create({
-        data: {
-          title: args.title,
-          description: args.description,
-          tags: args.tags,
-          metadata: args.metadata,
-          url,
-          duration: args.duration,
-          category: args.category,
-        },
-      });
+      const data = {
+        title: args.title,
+        description: args.description,
+        tags: args.tags,
+        metadata: args.metadata,
+        url,
+        duration: args.duration,
+        category: args.category,
+        ...(args.id && { id: args.id }), // Conditionally add id if it exists
+      };
+      return context.prisma.animation.create({ data });
+
     }
   },
 };

@@ -14,16 +14,19 @@ const typeDefs = gql`
     category: String!
     tags: [String!]!
     createdAt: String!
+    updatedAt: String! 
   }
 
   type Query {
     searchAnimations(query: String, category: String, tags: [String]): [Animation]
     getAnimation(id: Int!): Animation
     downloadAnimation(id: Int!): String
+    animationsSince(lastSync: String!): [Animation!]!  
   }
 
   type Mutation {
     uploadAnimation(
+      id: String!
       title: String!, 
       description: String!, 
       tags: [String!]!, 
