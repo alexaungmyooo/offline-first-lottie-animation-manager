@@ -1,0 +1,23 @@
+# Ignore node modules
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Ignore logs
+logs
+*.log
+
+# Ignore configuration files
+.env
+
+# Ignore git and related files
+.git
+.gitignore
+
+# Ignore Docker-related files
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Ignore other files not needed for the build
+README.md

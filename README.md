@@ -67,7 +67,7 @@ Build a small React application and the required APIs that enable users to searc
    - Create a `.env` file in the root of the `backend` directory with the following content:
      ```sh
      ALLOWED_ORIGINS=http://localhost:3000,http://localhost:4000,http://localhost:5173,http://localhost:4173
-     DATABASE_URL=mysql://root:root@12345@db:3306/lottiefiles
+     DATABASE_URL=mysql://[MYSQL_USER]:[MYSQL_ROOT_PASSWORD]:3306/lottiefiles
      SERVER_PORT=4000
      BASE_URL=http://localhost:4000
      ```
