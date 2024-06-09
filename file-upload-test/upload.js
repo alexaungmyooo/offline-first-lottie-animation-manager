@@ -9,6 +9,7 @@ const uploadFile = async (filePath) => {
   form.append('operations', JSON.stringify({
     query: `mutation ($file: Upload!) {
       uploadAnimation(
+        id: "123",
         title: "Test",
         description: "Test Description",
         tags: ["tag1", "tag2"],
