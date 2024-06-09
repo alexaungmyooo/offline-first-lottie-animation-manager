@@ -5,15 +5,30 @@ import { AnimationData, LottieAnimation } from '../types';
 
 interface AnimationDetailProps {
   animation: LottieAnimation;
-  animationData: AnimationData;
+  metadata: string; // Allow string to match LottieAnimationProps
 }
 
-const AnimationDetail: React.FC<AnimationDetailProps> = ({ animation, animationData }) => {
+const AnimationDetail: React.FC<AnimationDetailProps> = ({ animation, metadata }) => {
   const [isStopped, setIsStopped] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const animationRef = useRef<any>(null);
+  const [parsedAnimationData, setParsedAnimationData] = useState<AnimationData | null>(null);
+
+  useEffect(() => {
+    // Parse metadata if it is a string
+    let parsedData: AnimationData | null = null;
+    try {
+      parsedData = JSON.parse(metadata);
+    } catch (error) {
+      console.error("Failed to parse metadata:", error);
+    }
+
+    if (parsedData) {
+      setParsedAnimationData(parsedData);
+    }
+  }, [metadata]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -27,14 +42,14 @@ const AnimationDetail: React.FC<AnimationDetailProps> = ({ animation, animationD
   const defaultOptions = {
     loop: true,
     autoplay: true,
-    animationData: animationData,
+    animationData: parsedAnimationData,
     rendererSettings: {
       preserveAspectRatio: 'xMidYMid slice'
     }
   };
 
   const handleDownload = () => {
-    const blob = new Blob([JSON.stringify(animationData)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(parsedAnimationData)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -48,27 +63,28 @@ const AnimationDetail: React.FC<AnimationDetailProps> = ({ animation, animationD
       <div className="animation-header flex justify-between items-center mb-4">
         <div>
           <h2 className="text-2xl font-bold">{animation.title}</h2>
-          <h3 className="text-lg text-gray-600">{animationData.nm}</h3>
+          <h3 className="text-lg text-gray-600">{parsedAnimationData?.nm}</h3>
         </div>
-        
       </div>
       <div className="animation-metadata mb-4">
-        <p><strong>Version:</strong> {animationData.v}</p>
-        <p><strong>Width:</strong> {animationData.w}</p>
-        <p><strong>Height:</strong> {animationData.h}</p>
-        <p><strong>Frame Rate:</strong> {animationData.fr}</p>
-        <p><strong>In Point:</strong> {animationData.ip}</p>
-        <p><strong>Out Point:</strong> {animationData.op}</p>
+        <p><strong>Version:</strong> {parsedAnimationData?.v}</p>
+        <p><strong>Width:</strong> {parsedAnimationData?.w}</p>
+        <p><strong>Height:</strong> {parsedAnimationData?.h}</p>
+        <p><strong>Frame Rate:</strong> {parsedAnimationData?.fr}</p>
+        <p><strong>In Point:</strong> {parsedAnimationData?.ip}</p>
+        <p><strong>Out Point:</strong> {parsedAnimationData?.op}</p>
       </div>
       <div className="animation-viewer mb-4">
-        <Lottie
-          options={defaultOptions}
-          height={400}
-          width={400}
-          isStopped={isStopped}
-          isPaused={isPaused}
-          ref={animationRef}
-        />
+        {parsedAnimationData && (
+          <Lottie
+            options={defaultOptions}
+            height={400}
+            width={400}
+            isStopped={isStopped}
+            isPaused={isPaused}
+            ref={animationRef}
+          />
+        )}
       </div>
       <div className="controls flex justify-between items-center">
         <div className="flex space-x-2">

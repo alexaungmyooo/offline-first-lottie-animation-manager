@@ -6,7 +6,6 @@ import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
   addPendingUpload,
   addAnimation as addAnimationToDB,
-  addLottieFile,
 } from "../utils/indexedDB";
 import { RootState } from "./../store/store";
 import { addAnimationState } from "./../store/animationsSlice";
@@ -17,11 +16,8 @@ import { UPLOAD_ANIMATION_QUERY } from "../graphql/mutations";
 
 const Upload: React.FC = () => {
   const [title, setTitle] = useState("");
-  const [metadata, setMetadata] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
-  const [duration, setDuration] = useState(0);
-  const [category, setCategory] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [successMessage, setSuccessMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -34,51 +30,52 @@ const Upload: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) return;
-
+    if (!file) {
+      setSuccessMessage("Please select a file to upload.");
+      return;
+    }
+  
+    if (!title || !description || !tags.length) {
+      setSuccessMessage("Please fill in all the required fields.");
+      return;
+    }
+  
     const reader = new FileReader();
     reader.onload = async (event) => {
       const fileData = JSON.parse(event.target?.result as string);
-
+  
       const uniqueID = uuidv4(); // Generate a UUID
       const timestamp = new Date().toISOString();
-
-      const baseData = {
+  
+      const animationData: LottieAnimation = {
         id: uniqueID,
         title,
         description,
         tags,
-        metadata,
-        duration,
-        category,
         createdAt: timestamp,
         updatedAt: timestamp,
-      };
-
-      const animationData: LottieAnimation = {
-        ...baseData,
         file,
         filename: file.name,
+        url: "", // Initialize url property
+        metadata: fileData, // Store full animation JSON here
       };
-
-      // const animationData: LottieAnimation = {
-      //   ...baseData,
-      //   url: "",
-      // };
-
+  
       if (offline) {
-        await handleOfflineUpload(animationData, fileData);
+        await handleOfflineUpload(animationData);
       } else {
-        await handleOnlineUpload(animationData, fileData, file);
+        await handleOnlineUpload(animationData, file);
       }
-
+  
       clearForm();
     };
-
+  
     reader.readAsText(file);
   };
+  
 
-  const handleOfflineUpload = async (animationData: LottieAnimation, fileData: unknown) => {
+  const handleOfflineUpload = async (
+    animationData: LottieAnimation
+  ) => {
     if ("serviceWorker" in navigator && "SyncManager" in window) {
       navigator.serviceWorker.ready.then((registration) => {
         return registration.sync
@@ -87,7 +84,7 @@ const Upload: React.FC = () => {
             await addPendingUpload(animationData);
             dispatch(addAnimationState(animationData));
             await addAnimationToDB(animationData); // Save to IndexedDB
-            await addLottieFile(animationData.id, fileData); // Use a unique ID or timestamp
+            //await addLottieFile(animationData.id, fileData); // Use a unique ID or timestamp
             setSuccessMessage(
               "Animation uploaded offline. It will be synced when you are online."
             );
@@ -99,38 +96,48 @@ const Upload: React.FC = () => {
     }
   };
 
-  const handleOnlineUpload = async (animationData: LottieAnimation, fileData: unknown, file: File) => {
-    const operations = {
-      query: UPLOAD_ANIMATION_QUERY,
-      variables: {
-        id: animationData.id, // Pass the unique ID to the mutation
-        title: animationData.title,
-        description: animationData.description,
-        tags: animationData.tags,
-        metadata: animationData.metadata,
-        file: null, // File will be appended in the map
-        duration: animationData.duration,
-        category: animationData.category,
-      },
-    };
-    const map = { "0": ["variables.file"] };
-
-    const result = await customFetch(GRAPHQL_API_URL, operations, map, file);
-    if (result.data) {
-      dispatch(addAnimationState(result.data.uploadAnimation));
-      await addAnimationToDB(result.data.uploadAnimation); // Save to IndexedDB
-      await addLottieFile(String(result.data.uploadAnimation.id), fileData); // Save the Lottie JSON file to IndexedDB
-      setSuccessMessage("Animation uploaded successfully!");
+  const handleOnlineUpload = async (
+    animationData: LottieAnimation,
+    file: File
+  ) => {
+    try {
+      const operations = {
+        query: UPLOAD_ANIMATION_QUERY,
+        variables: {
+          id: animationData.id,
+          title: animationData.title,
+          description: animationData.description,
+          tags: animationData.tags,
+          file: null,
+        },
+      };
+      const map = { "0": ["variables.file"] };
+  
+      const result = await customFetch(GRAPHQL_API_URL, operations, map, file);
+      if (result.data) {
+        const savedAnimation = {
+          ...result.data.uploadAnimation,
+          file: null,
+          url: result.data.uploadAnimation.url,
+        };
+        dispatch(addAnimationState(savedAnimation));
+        await addAnimationToDB(savedAnimation);
+        //await addLottieFile(savedAnimation.id, fileData);
+        setSuccessMessage("Animation uploaded successfully!");
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      console.error('Online upload failed:', error);
+      setSuccessMessage("Error uploading animation. Please try again.");
     }
   };
+  
 
   const clearForm = () => {
     setTitle("");
-    setMetadata("");
     setDescription("");
     setTags([]);
-    setDuration(0);
-    setCategory("");
     setFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -148,12 +155,6 @@ const Upload: React.FC = () => {
           className="input w-full px-3 py-2 border rounded-md"
         />
         <textarea
-          placeholder="Metadata"
-          value={metadata}
-          onChange={(e) => setMetadata(e.target.value)}
-          className="textarea w-full px-3 py-2 border rounded-md"
-        />
-        <textarea
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -166,20 +167,6 @@ const Upload: React.FC = () => {
           onChange={(e) =>
             setTags(e.target.value.split(",").map((tag) => tag.trim()))
           }
-          className="input w-full px-3 py-2 border rounded-md"
-        />
-        <input
-          type="number"
-          placeholder="Duration"
-          value={duration}
-          onChange={(e) => setDuration(Number(e.target.value))}
-          className="input w-full px-3 py-2 border rounded-md"
-        />
-        <input
-          type="text"
-          placeholder="Category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
           className="input w-full px-3 py-2 border rounded-md"
         />
         <input

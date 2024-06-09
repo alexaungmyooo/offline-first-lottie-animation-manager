@@ -1,39 +1,36 @@
+// src/components/LottieAnimation.tsx
 import React, { useEffect, useState } from 'react';
 import Lottie from 'react-lottie';
-import { getLottieFile } from '../utils/indexedDB';
 import { AnimationData } from '../types';
 
 interface LottieAnimationProps {
-  animationId: string;
-  animationUrl: string;
+  metadata: string; // Change to string to match your data type
   offline: boolean;
 }
 
-const LottieAnimation: React.FC<LottieAnimationProps> = ({ animationId, animationUrl, offline }) => {
-  const [animationData, setAnimationData] = useState<AnimationData>();
+const LottieAnimation: React.FC<LottieAnimationProps> = ({ metadata, offline }) => {
+  const [animationData, setAnimationData] = useState<AnimationData | null>(null);
 
   useEffect(() => {
-    if (offline) {
-      const loadLottieFile = async () => {
-        const fileData = await getLottieFile(animationId) as AnimationData;
-        setAnimationData(fileData);
-      };
-      loadLottieFile();
-    } else {
-      fetch(animationUrl)
-        .then(response => response.json())
-        .then(data => setAnimationData(data))
-        .catch(error => console.error('Error loading Lottie animation:', error));
+    let parsedMetadata: AnimationData | null = null;
+    try {
+      parsedMetadata = JSON.parse(metadata);
+    } catch (error) {
+      console.error("Failed to parse metadata:", error);
     }
-  }, [animationId, animationUrl, offline]);
+
+    if (parsedMetadata) {
+      setAnimationData(parsedMetadata);
+    }
+  }, [metadata, offline]);
 
   const defaultOptions = {
     loop: true,
     autoplay: true,
     animationData: animationData,
     rendererSettings: {
-      preserveAspectRatio: 'xMidYMid slice'
-    }
+      preserveAspectRatio: 'xMidYMid slice',
+    },
   };
 
   return animationData ? <Lottie options={defaultOptions} height={400} width={400} /> : <div>Loading...</div>;

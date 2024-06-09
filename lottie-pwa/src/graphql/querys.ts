@@ -9,8 +9,6 @@ export const SEARCH_ANIMATIONS = gql`
       description
       metadata
       url
-      duration
-      category
       tags
       createdAt
       updatedAt
@@ -26,8 +24,6 @@ export const ANIMATIONS_SINCE_QUERY = `
       description
       metadata
       url
-      duration
-      category
       tags
       createdAt
       updatedAt

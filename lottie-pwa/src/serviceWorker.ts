@@ -1,7 +1,7 @@
 // src/serviceWorker.ts
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
-import { getPendingUploads, getLottieFile, addAnimation, addLottieFile, deletePendingUpload, getLastSyncTime, setLastSyncTime } from './utils/indexedDB';
+import { getPendingUploads, addAnimation, deletePendingUpload, getLastSyncTime, setLastSyncTime } from './utils/indexedDB';
 import { customFetch } from './utils/customFetch';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
 import { UPLOAD_ANIMATION_QUERY } from './graphql/mutations';
@@ -67,16 +67,16 @@ async function syncPendingUploads() {
     console.log('Pending uploads:', pendingUploads);
 
     for (const upload of pendingUploads) {
-      const { file, ...uploadData } = upload;
+      const { file, id, title, description, tags } = upload;
       console.log('Processing upload:', upload);
 
-      const fileData = await getLottieFile(upload.id);
+      const fileData = upload.metadata;
       console.log('File data for upload:', upload.id, fileData);
 
       if (fileData && file) {
         const operations = {
           query: UPLOAD_ANIMATION_QUERY,
-          variables: { ...uploadData, fileData },
+          variables: { id, title, description, tags },
         };
         const map = { '0': ['variables.file'] };
 
@@ -85,7 +85,7 @@ async function syncPendingUploads() {
 
         if (result.data) {
           await addAnimation(result.data.uploadAnimation);
-          await addLottieFile(String(result.data.uploadAnimation.id), fileData);
+          // await addLottieFile(String(result.data.uploadAnimation.id), fileData);
           await deletePendingUpload(upload.id);
         }
       }
@@ -138,8 +138,8 @@ async function syncServerData() {
           throw new Error(`Failed to fetch JSON data: ${jsonResponse.status}`);
         }
 
-        const fileData = await jsonResponse.json();
-        await addLottieFile(animation.id, fileData); // Save the Lottie JSON file to IndexedDB
+        // const fileData = await jsonResponse.json();
+        // await addLottieFile(animation.id, fileData); // Save the Lottie JSON file to IndexedDB
 
       } catch (dbError) {
         console.error('Error adding animation to IndexedDB:', dbError);

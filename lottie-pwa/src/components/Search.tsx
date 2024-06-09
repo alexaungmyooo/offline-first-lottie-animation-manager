@@ -13,6 +13,7 @@ const Search: React.FC = () => {
   const debouncedQuery = useDebounce(query, 300);
   const dispatch = useDispatch();
   const offline = useSelector((state: RootState) => state.animations.offline);
+  const animations = useSelector((state: RootState) => state.animations.animations);
 
   const { data, loading, error } = useQuery(SEARCH_ANIMATIONS, {
     variables: { query: debouncedQuery },
@@ -20,21 +21,29 @@ const Search: React.FC = () => {
   });
 
   useEffect(() => {
-
-    if (offline && debouncedQuery) {
+    if (!debouncedQuery) {
+      // When the query is cleared, show all animations or an empty list
+      if (offline) {
+        getAnimations().then((animations) => {
+          dispatch(setAnimations(animations));
+        });
+      } else {
+        dispatch(setAnimations([])); // or fetch all animations from the server if needed
+      }
+    } else if (offline && debouncedQuery) {
       getAnimations().then((animations) => {
         const filteredAnimations = animations.filter((animation) =>
           (animation.title && animation.title.includes(debouncedQuery)) ||
           (animation.description && animation.description.includes(debouncedQuery))
         );
-
         dispatch(setAnimations(filteredAnimations));
       });
     } else if (data && !loading && !error) {
-
-      dispatch(setAnimations(data.searchAnimations));
+      dispatch(setAnimations(data.searchAnimations || []));
     }
   }, [data, debouncedQuery, offline, dispatch, loading, error]);
+
+  const noAnimationsFound = !loading && !error && debouncedQuery && animations.length === 0;
 
   return (
     <div className="search">
@@ -47,6 +56,7 @@ const Search: React.FC = () => {
       />
       {loading && <p className="text-gray-600 mt-2">Loading...</p>}
       {error && <p className="text-red-600 mt-2">Error: {error.message}</p>}
+      {noAnimationsFound && <p className="text-gray-600 mt-2">No animations found.</p>}
     </div>
   );
 };

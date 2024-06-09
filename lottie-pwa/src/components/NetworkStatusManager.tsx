@@ -1,3 +1,4 @@
+// src/components/NetworkStatusManager.tsx
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setOffline } from '../store/animationsSlice';
@@ -7,8 +8,15 @@ const NetworkStatusManager: React.FC = () => {
 
   useEffect(() => {
     const updateOnlineStatus = () => {
-      console.log("Is Online :", navigator.onLine)
-      dispatch(setOffline(!navigator.onLine));
+      const isOnline = navigator.onLine;
+      console.log("Is Online :", isOnline);
+      dispatch(setOffline(!isOnline));
+      if (isOnline) {
+        // Trigger sync when back online
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.sync.register('sync-pending-uploads');
+        });
+      }
     };
 
     window.addEventListener('online', updateOnlineStatus);
@@ -27,6 +35,7 @@ const NetworkStatusManager: React.FC = () => {
 };
 
 export default NetworkStatusManager;
+
 
 
 

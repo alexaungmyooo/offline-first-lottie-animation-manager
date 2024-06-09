@@ -26,8 +26,14 @@ const animationsSlice = createSlice({
     addAnimationState: (state, action: PayloadAction<LottieAnimation>) => {
       const animation = action.payload;
       if (animation.file) {
-        // Create a URL for offline animation file
-        animation.url = URL.createObjectURL(animation.file);
+        try {
+          // Create a URL for offline animation file
+          animation.url = URL.createObjectURL(animation.file);
+        } catch (error) {
+          console.error('Error creating object URL:', error);
+        }
+      } else {
+        console.warn('Animation file is null:', animation);
       }
       state.animations.push(animation);
     },

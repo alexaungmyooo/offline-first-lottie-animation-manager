@@ -1,28 +1,27 @@
+// src/components/AnimationList.tsx
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import LottieAnimation from './LottieAnimation';
 import AnimationDetail from './AnimationDetail';
 import Modal from './Modal';
-import { LottieAnimation as LottieAnimationType, AnimationData } from '../types';
-import { getLottieFile } from '../utils/indexedDB';
+import { LottieAnimation as LottieAnimationType } from '../types';
 
 const AnimationList: React.FC = () => {
   const animations = useSelector((state: RootState) => state.animations.animations);
   const offline = useSelector((state: RootState) => state.animations.offline);
   const [selectedAnimation, setSelectedAnimation] = useState<LottieAnimationType | null>(null);
-  const [selectedAnimationData, setSelectedAnimationData] = useState<AnimationData | null>(null);
+  const [selectedAnimationData, setSelectedAnimationData] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAnimationClick = async (animation: LottieAnimationType) => {
     setSelectedAnimation(animation);
     if (offline) {
-      const fileData = await getLottieFile(animation.id);
-      setSelectedAnimationData(fileData as AnimationData);
-    } else if (animation.url) {
-      const response = await fetch(animation.url);
-      const data = await response.json();
-      setSelectedAnimationData(data);
+      const fileData = JSON.stringify(animation.metadata);
+      setSelectedAnimationData(fileData);
+    } else if (animation.metadata) {
+      const fileData = JSON.stringify(animation.metadata);
+      setSelectedAnimationData(fileData);
     }
     setIsModalOpen(true);
   };
@@ -43,11 +42,12 @@ const AnimationList: React.FC = () => {
             onClick={() => handleAnimationClick(animation)}
           >
             <h3 className="text-xl font-bold mb-2">{animation.title}</h3>
-            <LottieAnimation
-              animationId={String(animation.id)}
-              animationUrl={animation.url ?? ''}
-              offline={offline}
-            />
+            {animation.metadata && (
+              <LottieAnimation
+                metadata={JSON.stringify(animation.metadata)}
+                offline={offline}
+              />
+            )}
           </div>
         ))}
       </div>
@@ -55,7 +55,7 @@ const AnimationList: React.FC = () => {
         {selectedAnimation && selectedAnimationData && (
           <AnimationDetail
             animation={selectedAnimation}
-            animationData={selectedAnimationData}
+            metadata={selectedAnimationData}
           />
         )}
       </Modal>

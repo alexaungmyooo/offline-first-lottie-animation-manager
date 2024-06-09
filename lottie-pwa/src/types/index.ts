@@ -4,14 +4,12 @@ export interface LottieAnimation {
   title: string;
   description?: string;
   tags?: string[];
-  metadata: string;
+  metadata?: AnimationData;
   url?: string; // Optional because offline animations won't have this
   file?: File; // Optional because online animations won't have this
   filename?: string; // Optional because online animations won't have this
   createdAt: string;
   updatedAt: string;
-  duration?: number;
-  category?: string;
 }
 
 export interface AnimationData {
