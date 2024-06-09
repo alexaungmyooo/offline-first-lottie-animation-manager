@@ -11,6 +11,8 @@ import path from 'path';
 
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(",") || [];
 
+console.log(ALLOWED_ORIGINS)
+
 const schema = makeExecutableSchema({
   typeDefs,
   resolvers,

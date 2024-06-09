@@ -1,29 +1,26 @@
 # Use the official Node.js image as the base image
-FROM node:14 AS build
+FROM node:20-alpine
 
-# Set the working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Copy package.json and package-lock.json to the working directory
+COPY package.json package-lock.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy the rest of the application code
+# Copy the rest of the application code to the working directory
 COPY . .
 
-# Build the React application
+# Build the application
 RUN npm run build
 
-# Use an nginx server to serve the built application
-FROM nginx:alpine
+# Expose the port on which your application will run
+EXPOSE 4173
 
-# Copy the built files from the previous stage
-COPY --from=build /app/build /usr/share/nginx/html
+# Set the environment variable for Vite
+ENV VITE_API_URL=VITE_GRAPHQL_API_URL=http://localhost:4000/graphql
 
-# Expose the port nginx is running on
-EXPOSE 80
-
-# Define the default command
-CMD ["nginx", "-g", "daemon off;"]
+# Command to run the application with host binding
+CMD ["npm", "run", "preview", "--", "--host"]

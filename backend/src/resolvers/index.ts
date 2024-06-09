@@ -1,25 +1,8 @@
-// src/resolvers/index.ts
 import { createWriteStream, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
-
 import { GraphQLUpload } from 'graphql-upload-ts';
-import { Context, UploadAnimationArgs, SearchAnimationsArgs, GetAnimationArgs, AnimationData } from '../types';
-
-const extractMetadata = (jsonData: any) => {
-  return {
-    v: jsonData.v,
-    fr: jsonData.fr,
-    ip: jsonData.ip,
-    op: jsonData.op,
-    w: jsonData.w,
-    h: jsonData.h,
-    nm: jsonData.nm,
-    ddd: jsonData.ddd,
-    assets: jsonData.assets,
-    layers: jsonData.layers,
-  };
-};
+import { Context, UploadAnimationArgs, SearchAnimationsArgs, GetAnimationArgs } from '../types';
 
 const resolvers = {
   Upload: GraphQLUpload,
@@ -39,13 +22,8 @@ const resolvers = {
         where.tags = { hasSome: tags };
       }
 
-      const animations = await context.prisma.animation.findMany({ where });
+      return context.prisma.animation.findMany({ where });
 
-
-      return animations.map(animation => ({
-        ...animation,
-        // metadata: JSON.stringify(animation.metadata)
-      }));
     },
     getAnimation: async (_: any, args: GetAnimationArgs, context: Context) => {
       return context.prisma.animation.findUnique({
@@ -53,7 +31,6 @@ const resolvers = {
       });
     },
     animationsSince: async (_: any, args: { lastSync: string }, context: Context) => {
-
       const { lastSync } = args;
       console.log("AnimationsSince ", new Date(lastSync));
       return context.prisma.animation.findMany({
@@ -96,7 +73,6 @@ const resolvers = {
       });
 
       const jsonData = JSON.parse(fileContent);
-      const metadata = extractMetadata(jsonData);
 
       const baseUrl = process.env.BASE_URL || 'http://localhost:4000';
       const url = `${baseUrl}/uploads/${newFilename}`;
@@ -111,7 +87,6 @@ const resolvers = {
           url,
         },
       });
-
     }
   },
 };
