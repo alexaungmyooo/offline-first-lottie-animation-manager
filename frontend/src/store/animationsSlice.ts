@@ -1,6 +1,6 @@
 // src/store/animationsSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { LottieAnimation } from './../types';
+import { LottieAnimation } from '../types';
 import { getAnimations, addAnimation as addAnimationToDB } from '../utils/indexedDB';
 import { AppDispatch } from './store';
 

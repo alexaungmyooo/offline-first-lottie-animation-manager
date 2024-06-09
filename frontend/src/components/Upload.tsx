@@ -7,9 +7,9 @@ import {
   addPendingUpload,
   addAnimation as addAnimationToDB,
 } from "../utils/indexedDB";
-import { RootState } from "./../store/store";
-import { addAnimationState } from "./../store/animationsSlice";
-import { LottieAnimation } from "./../types";
+import { RootState } from "../store/store";
+import { addAnimationState } from "../store/animationsSlice";
+import { LottieAnimation } from "../types";
 import { customFetch } from "../utils/customFetch";
 import { UPLOAD_ANIMATION_QUERY } from "../graphql/mutations";
 // import { useNavigate } from 'react-router-dom';
