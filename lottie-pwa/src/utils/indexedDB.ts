@@ -1,22 +1,20 @@
-// src/utils/indexedDB.ts
 import { openDB } from 'idb';
-import { LottieAnimation, PendingUpload } from '../types';
+import { LottieAnimation } from '../types';
 
 const dbPromise = openDB('lottieDB', 1, {
   upgrade(db) {
-    db.createObjectStore('animations', {
-      keyPath: 'id',
-      autoIncrement: true,
-    });
-    db.createObjectStore('pendingUploads', {
-      keyPath: 'id',
-      autoIncrement: true,
-    });
-    db.createObjectStore('lottieFiles'); // Remove keyPath for lottieFiles
-
-    // db.createObjectStore('lottieFiles', {
-    //   keyPath: 'id',
-    // });
+    if (!db.objectStoreNames.contains('animations')) {
+      db.createObjectStore('animations', { keyPath: 'id' });
+    }
+    if (!db.objectStoreNames.contains('pendingUploads')) {
+      db.createObjectStore('pendingUploads', { keyPath: 'id' });
+    }
+    if (!db.objectStoreNames.contains('lottieFiles')) {
+      db.createObjectStore('lottieFiles');
+    }
+    if (!db.objectStoreNames.contains('meta')) {
+      db.createObjectStore('meta');
+    }
   },
 });
 
@@ -30,12 +28,12 @@ export const addAnimation = async (animation: LottieAnimation): Promise<IDBValid
   return db.put('animations', animation);
 };
 
-export const getPendingUploads = async (): Promise<PendingUpload[]> => {
+export const getPendingUploads = async (): Promise<LottieAnimation[]> => {
   const db = await dbPromise;
   return db.getAll('pendingUploads');
 };
 
-export const addPendingUpload = async (upload: PendingUpload): Promise<IDBValidKey> => {
+export const addPendingUpload = async (upload: LottieAnimation): Promise<IDBValidKey> => {
   const db = await dbPromise;
   return db.put('pendingUploads', upload);
 };
@@ -44,6 +42,13 @@ export const clearPendingUploads = async (): Promise<void> => {
   const db = await dbPromise;
   return db.clear('pendingUploads');
 };
+
+export const deletePendingUpload = async (id: string): Promise<void> => {
+  const db = await dbPromise;
+  const tx = db.transaction('pendingUploads', 'readwrite');
+  tx.objectStore('pendingUploads').delete(id);
+  await tx.done;
+}
 
 export const getLottieFile = async (id: string): Promise<unknown> => {
   const db = await dbPromise;
@@ -54,3 +59,15 @@ export const addLottieFile = async (id: string, fileData: unknown): Promise<void
   const db = await dbPromise;
   await db.put('lottieFiles', fileData, id);
 };
+
+// Metadata functions
+export const getLastSyncTime = async (): Promise<string> => {
+  const db = await dbPromise;
+  const lastSyncTime = await db.get('meta', 'lastSync');
+  return lastSyncTime || new Date(0).toISOString();
+}
+
+export const setLastSyncTime = async (lastSync: string): Promise<void> => {
+  const db = await dbPromise;
+  await db.put('meta', lastSync, 'lastSync');
+}

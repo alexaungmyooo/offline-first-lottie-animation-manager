@@ -10,7 +10,7 @@ import UploadPage from './pages/UploadPage';
 import AnimationsPage from './pages/AnimationsPage';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
-import OnlineHandler from './components/OnlineHandler';
+import NetworkStatusManager from './components/NetworkStatusManager';
 
 const App: React.FC = () => {
   return (
@@ -19,7 +19,7 @@ const App: React.FC = () => {
         <Router>
           <div className="flex flex-col min-h-screen">
             <Navigation />
-            <OnlineHandler /> {/* Include the new component here */}
+            <NetworkStatusManager />
             <main className="container mx-auto p-4 flex-grow">
               <Routes>
                 <Route path="/" element={<SearchPage />} />

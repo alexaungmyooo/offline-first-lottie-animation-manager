@@ -1,6 +1,6 @@
 // src/store/animationsSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { LottieAnimation, OfflineAnimation } from './../types';
+import { LottieAnimation } from './../types';
 import { getAnimations, addAnimation as addAnimationToDB } from '../utils/indexedDB';
 import { AppDispatch } from './store';
 
@@ -19,28 +19,17 @@ const animationsSlice = createSlice({
   initialState,
   reducers: {
     setAnimations: (state, action: PayloadAction<LottieAnimation[]>) => {
+      console.log('Dispatching setAnimations with payload:', action.payload);  // <-- Added log
+
       state.animations = action.payload;
     },
-    addAnimationState: (state, action: PayloadAction<LottieAnimation | OfflineAnimation>) => {
-      // Convert OfflineAnimation to Animation if necessary
-      if ('file' in action.payload) {
-        const offlineAnimation = action.payload as OfflineAnimation;
-        const animation: LottieAnimation = {
-          id: offlineAnimation.id, // Temporary ID
-          title: offlineAnimation.title,
-          description: '',
-          tags: [],
-          metadata: offlineAnimation.metadata,
-          url: URL.createObjectURL(offlineAnimation.file),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          duration: 0,
-          category: '',
-        };
-        state.animations.push(animation);
-      } else {
-        state.animations.push(action.payload);
+    addAnimationState: (state, action: PayloadAction<LottieAnimation>) => {
+      const animation = action.payload;
+      if (animation.file) {
+        // Create a URL for offline animation file
+        animation.url = URL.createObjectURL(animation.file);
       }
+      state.animations.push(animation);
     },
     setOffline: (state, action: PayloadAction<boolean>) => {
       state.offline = action.payload;

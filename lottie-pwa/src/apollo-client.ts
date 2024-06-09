@@ -4,9 +4,10 @@ import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 import { ApolloLink } from '@apollo/client';
 
+// console.log(import.meta.env.VITE_GRAPHQL_API_URL)
 // HTTP Link
 const httpLink = createHttpLink({
-  uri: 'http://localhost:4000/graphql',
+  uri: import.meta.env.VITE_GRAPHQL_API_URL,
 });
 
 // Error Handling Link

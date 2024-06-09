@@ -1,39 +1,40 @@
 // src/components/Search.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAnimations } from '../store/animationsSlice';
 import { getAnimations } from '../utils/indexedDB';
-import { RootState } from './../store/store';
+import { RootState } from '../store/store';
 import { SEARCH_ANIMATIONS } from '../graphql/querys';
+import { useDebounce } from '../hooks/useDebounce';
 
 const Search: React.FC = () => {
   const [query, setQuery] = useState('');
+  const debouncedQuery = useDebounce(query, 300);
   const dispatch = useDispatch();
   const offline = useSelector((state: RootState) => state.animations.offline);
 
   const { data, loading, error } = useQuery(SEARCH_ANIMATIONS, {
-    variables: { query },
-    skip: offline || !query, // Skip query if offline or query is empty
+    variables: { query: debouncedQuery },
+    skip: offline || !debouncedQuery, // Skip query if offline or debouncedQuery is empty
   });
 
-  React.useEffect(() => {
-    if (offline && query) {
-      // Fetch from IndexedDB when offline
+  useEffect(() => {
+
+    if (offline && debouncedQuery) {
       getAnimations().then((animations) => {
         const filteredAnimations = animations.filter((animation) =>
-          animation.title.includes(query) || animation.description.includes(query)
+          (animation.title && animation.title.includes(debouncedQuery)) ||
+          (animation.description && animation.description.includes(debouncedQuery))
         );
+
         dispatch(setAnimations(filteredAnimations));
       });
-    } else if (data) {
+    } else if (data && !loading && !error) {
+
       dispatch(setAnimations(data.searchAnimations));
-      // // Update IndexedDB with the fetched data
-      // data.searchAnimations.forEach((animation: LottieAnimation) => {
-      //   addAnimationToDB(animation);
-      // });
     }
-  }, [data, query, offline, dispatch]);
+  }, [data, debouncedQuery, offline, dispatch, loading, error]);
 
   return (
     <div className="search">

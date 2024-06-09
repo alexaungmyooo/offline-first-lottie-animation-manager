@@ -7,35 +7,34 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'serviceWorker.ts',
       includeAssets: [
         'favicon.ico',
         'robots.txt',
         'apple-touch-icon.png',
-        'manifest.json' // Ensure manifest.json is included here
       ],
       manifest: {
-        name: 'Lottie Animation PWA',
-        short_name: 'LottiePWA',
-        description: 'Lottie Animation Manager PWA',
-        theme_color: '#ffffff',
+        name: 'Lottie Animation Manager',
+        short_name: 'LottieManager',
+        description: 'Offline-First Lottie Animation Management System',
+        theme_color: '#16A34A',
         background_color: '#ffffff',
         display: 'standalone',
         icons: [
           {
-            src: '/favicon.ico',
-            sizes: '64x64 32x32 24x24 16x16',
-            type: 'image/x-icon',
+            "purpose": "maskable",
+            "sizes": "512x512",
+            "src": "icon512_maskable.png",
+            "type": "image/png"
           },
           {
-            src: '/logo192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: '/logo512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
+            "purpose": "any",
+            "sizes": "512x512",
+            "src": "icon512_rounded.png",
+            "type": "image/png"
+          }
         ],
       },
       workbox: {
