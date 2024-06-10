@@ -20,10 +20,12 @@ services:
     ports:
       - "4000:4000"
     environment:
-      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:4000,http://localhost:5173,http://localhost:4173,https://studio.apollographql.com
-      - DATABASE_URL=mysql://lottieuser:lottiepassword@db:3306/lottiefiles
-      - SERVER_PORT=4000
-      - BASE_URL=http://localhost:4000
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:4000,http://localhost:5173,http://localhost:4173,https://studio.apollographql.com
+      DATABASE_URL: mysql://lottieuser:lottiepassword@db:3306/lottiefiles
+      SERVER_PORT: 4000
+      BASE_URL: http://localhost:4000
+      WAIT_HOSTS: db:3306
+
     volumes:
       - ./backend/uploads:/app/uploads  # Mount the uploads directory
     depends_on:
