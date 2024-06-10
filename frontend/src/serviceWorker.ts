@@ -34,7 +34,7 @@ self.addEventListener('sync', (event) => {
 });
 
 // Setting up navigation routing
-let allowlist: undefined | RegExp[]
+let allowlist: undefined | RegExp[];
 if (import.meta.env.DEV) allowlist = [/^\/$/];
 
 registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html'), { allowlist }));
@@ -58,10 +58,9 @@ function startPeriodicSync() {
   periodicSync();
 }
 
-
 // Function to synchronize animations with the server
 async function syncPendingUploads() {
-  console.log('syncAnimations called');
+  console.log('syncPendingUploads called');
   try {
     const pendingUploads = await getPendingUploads();
     console.log('Pending uploads:', pendingUploads);
@@ -80,19 +79,23 @@ async function syncPendingUploads() {
         };
         const map = { '0': ['variables.file'] };
 
-        const result = await customFetch(GRAPHQL_API_URL, operations, map, file);
-        console.log('Upload result:', result);
+        try {
+          const result = await customFetch(GRAPHQL_API_URL, operations, map, file);
+          console.log('Upload result:', result);
 
-        if (result.data) {
-          await addAnimation(result.data.uploadAnimation);
-          await deletePendingUpload(upload.id);
+          if (result.data) {
+            await addAnimation(result.data.uploadAnimation);
+            await deletePendingUpload(upload.id);
+          }
+        } catch (uploadError) {
+          console.error(`Failed to upload animation with id ${id}:`, uploadError);
         }
       }
     }
 
     await syncServerData();
   } catch (error) {
-    console.error('Sync animations failed:', error);
+    console.error('Sync pending uploads failed:', error);
   }
 }
 
@@ -150,3 +153,4 @@ async function syncServerData() {
 }
 
 export { };
+
