@@ -72,9 +72,16 @@ Build a small React application and the required APIs that enable users to searc
      BASE_URL=http://localhost:4000
      ```
 
-   - Create a `.env` file in the root of the `frontend` directory with the following content:
+   - Create `.env.development` and `.env.production` files in the root of the `frontend` directory with the following content:
+     
+     **.env.development**:
      ```sh
      REACT_APP_GRAPHQL_API_URL=http://localhost:4000/graphql
+     ```
+
+     **.env.production**:
+     ```sh
+     REACT_APP_GRAPHQL_API_URL=http://your-production-url/graphql
      ```
 
 3. **Build and Start the Docker Containers**:
