@@ -60,10 +60,10 @@ const startApolloServer = async (app: express.Express) => {
   await server.start();
   server.applyMiddleware({ app, path: '/graphql' });
 
+  // Error handling middleware should be added after all other middleware and routes
+  app.use(errorHandler);
+
   return { app, server };
 };
-
-// Error handling middleware should be added after all other middleware and routes
-app.use(errorHandler);
 
 export { app, startApolloServer };
