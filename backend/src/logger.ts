@@ -1,6 +1,8 @@
 // src/logger.ts
 import { createLogger, format, transports } from 'winston';
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 const logger = createLogger({
   level: 'error',
   format: format.combine(
@@ -12,7 +14,9 @@ const logger = createLogger({
   transports: [
     new transports.File({ filename: 'errors.log', level: 'error' }),
     new transports.Console({
-      format: format.combine(format.colorize(), format.simple()),
+      format: isDevelopment
+        ? format.combine(format.colorize(), format.simple())
+        : format.combine(format.timestamp(), format.json()),
     }),
   ],
 });

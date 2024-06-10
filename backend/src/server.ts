@@ -2,9 +2,8 @@
 import http from 'http';
 import { app, startApolloServer } from './app';
 import prisma from './prisma';
-import 'dotenv/config';
 import { handleUncaughtErrors } from './middleware/errorHandler';
-
+import 'dotenv/config'; // Ensure environment variables are loaded
 
 const SERVER_PORT = process.env.SERVER_PORT || 4000;
 

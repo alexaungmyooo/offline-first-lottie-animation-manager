@@ -3,27 +3,39 @@ import { Request, Response, NextFunction } from 'express';
 import logger from '../logger'; // Update to the correct path
 import { UserInputError, AuthenticationError, ForbiddenError, InternalServerError } from '../errors';
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   logger.error(err);
 
   if (err instanceof UserInputError) {
-    return res.status(400).json({ errors: [{ message: err.message }] });
+    return res.status(400).json({
+      errors: [{ message: err.message, stack: isDevelopment ? err.stack : undefined }],
+    });
   }
 
   if (err instanceof AuthenticationError) {
-    return res.status(401).json({ errors: [{ message: err.message }] });
+    return res.status(401).json({
+      errors: [{ message: err.message, stack: isDevelopment ? err.stack : undefined }],
+    });
   }
 
   if (err instanceof ForbiddenError) {
-    return res.status(403).json({ errors: [{ message: err.message }] });
+    return res.status(403).json({
+      errors: [{ message: err.message, stack: isDevelopment ? err.stack : undefined }],
+    });
   }
 
   if (err instanceof InternalServerError) {
-    return res.status(500).json({ errors: [{ message: err.message }] });
+    return res.status(500).json({
+      errors: [{ message: err.message, stack: isDevelopment ? err.stack : undefined }],
+    });
   }
 
   // Fallback for unhandled errors
-  res.status(500).json({ errors: [{ message: 'Internal Server Error' }] });
+  res.status(500).json({
+    errors: [{ message: 'Internal Server Error', stack: isDevelopment ? err.stack : undefined }],
+  });
 };
 
 // Graceful shutdown
