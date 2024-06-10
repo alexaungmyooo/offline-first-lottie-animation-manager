@@ -9,7 +9,7 @@ const NetworkStatusManager: React.FC = () => {
   useEffect(() => {
     const updateOnlineStatus = () => {
       const isOnline = navigator.onLine;
-      console.log("Is Online :", isOnline);
+      // console.log("Is Online :", isOnline);
       dispatch(setOffline(!isOnline));
       if (isOnline) {
         // Trigger sync when back online

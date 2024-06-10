@@ -9,9 +9,6 @@ const dbPromise = openDB('lottieDB', 1, {
     if (!db.objectStoreNames.contains('pendingUploads')) {
       db.createObjectStore('pendingUploads', { keyPath: 'id' });
     }
-    // if (!db.objectStoreNames.contains('lottieFiles')) {
-    //   db.createObjectStore('lottieFiles');
-    // }
     if (!db.objectStoreNames.contains('meta')) {
       db.createObjectStore('meta');
     }
@@ -50,17 +47,6 @@ export const deletePendingUpload = async (id: string): Promise<void> => {
   await tx.done;
 }
 
-// export const getLottieFile = async (id: string): Promise<unknown> => {
-//   const db = await dbPromise;
-//   return db.get('lottieFiles', id);
-// };
-
-// export const addLottieFile = async (id: string, fileData: unknown): Promise<void> => {
-//   const db = await dbPromise;
-//   await db.put('lottieFiles', fileData, id);
-// };
-
-// Metadata functions
 export const getLastSyncTime = async (): Promise<string> => {
   const db = await dbPromise;
   const lastSyncTime = await db.get('meta', 'lastSync');

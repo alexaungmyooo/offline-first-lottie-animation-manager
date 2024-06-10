@@ -19,7 +19,7 @@ const animationsSlice = createSlice({
   initialState,
   reducers: {
     setAnimations: (state, action: PayloadAction<LottieAnimation[]>) => {
-      console.log('Dispatching setAnimations with payload:', action.payload);  // <-- Added log
+      console.log('Dispatching setAnimations with payload:', action.payload);  
 
       state.animations = action.payload;
     },

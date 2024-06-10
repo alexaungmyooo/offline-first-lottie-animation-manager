@@ -5,7 +5,7 @@ import { AnimationData, LottieAnimation } from '../types';
 
 interface AnimationDetailProps {
   animation: LottieAnimation;
-  metadata: string; // Allow string to match LottieAnimationProps
+  metadata: string; 
 }
 
 const AnimationDetail: React.FC<AnimationDetailProps> = ({ animation, metadata }) => {

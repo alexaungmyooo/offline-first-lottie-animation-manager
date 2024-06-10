@@ -85,7 +85,6 @@ async function syncPendingUploads() {
 
         if (result.data) {
           await addAnimation(result.data.uploadAnimation);
-          // await addLottieFile(String(result.data.uploadAnimation.id), fileData);
           await deletePendingUpload(upload.id);
         }
       }
@@ -137,9 +136,6 @@ async function syncServerData() {
         if (!jsonResponse.ok) {
           throw new Error(`Failed to fetch JSON data: ${jsonResponse.status}`);
         }
-
-        // const fileData = await jsonResponse.json();
-        // await addLottieFile(animation.id, fileData); // Save the Lottie JSON file to IndexedDB
 
       } catch (dbError) {
         console.error('Error adding animation to IndexedDB:', dbError);

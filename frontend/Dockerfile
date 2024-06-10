@@ -19,8 +19,5 @@ RUN npm run build
 # Expose the port on which your application will run
 EXPOSE 4173
 
-# Set the environment variable for Vite
-ENV VITE_API_URL=VITE_GRAPHQL_API_URL=http://localhost:4000/graphql
-
 # Command to run the application with host binding
 CMD ["npm", "run", "preview", "--", "--host"]

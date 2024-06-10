@@ -4,7 +4,7 @@ import Lottie from 'react-lottie';
 import { AnimationData } from '../types';
 
 interface LottieAnimationProps {
-  metadata: string; // Change to string to match your data type
+  metadata: string; 
   offline: boolean;
 }
 

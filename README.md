@@ -82,6 +82,10 @@ Build a small React application and the required APIs that enable users to searc
     docker-compose up --build
     ```
 
+   **Note**: If you encounter the error `P1001: Can't reach database server at 'db:3306'`, you might need to stop the containers and run `docker-compose up` again to ensure that the backend service starts correctly.
+
+
+
 4. **Access the Application**:
    - Frontend: [http://localhost:3000](http://localhost:3000)
    - Backend GraphQL Playground: [http://localhost:4000/graphql](http://localhost:4000/graphql)
