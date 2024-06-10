@@ -21,26 +21,30 @@ const Search: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!debouncedQuery) {
-      // When the query is cleared, show all animations or an empty list
-      if (offline) {
-        getAnimations().then((animations) => {
+    const fetchAnimations = async () => {
+      if (!debouncedQuery) {
+        // When the query is cleared, show all animations or an empty list
+        if (offline) {
+          const animations = await getAnimations();
           dispatch(setAnimations(animations));
-        });
-      } else {
-        dispatch(setAnimations([])); // or fetch all animations from the server if needed
-      }
-    } else if (offline && debouncedQuery) {
-      getAnimations().then((animations) => {
+        } else {
+          dispatch(setAnimations([])); // or fetch all animations from the server if needed
+        }
+      } else if (offline && debouncedQuery) {
+        const animations = await getAnimations();
         const filteredAnimations = animations.filter((animation) =>
           (animation.title && animation.title.includes(debouncedQuery)) ||
           (animation.description && animation.description.includes(debouncedQuery))
         );
         dispatch(setAnimations(filteredAnimations));
-      });
-    } else if (data && !loading && !error) {
-      dispatch(setAnimations(data.searchAnimations || []));
-    }
+      } else if (data && !loading && !error) {
+        dispatch(setAnimations(data.searchAnimations || []));
+      }
+    };
+
+    fetchAnimations().catch((err) => {
+      console.error('Error fetching animations: %o', err);
+    });
   }, [data, debouncedQuery, offline, dispatch, loading, error]);
 
   const noAnimationsFound = !loading && !error && debouncedQuery && animations.length === 0;
@@ -56,6 +60,7 @@ const Search: React.FC = () => {
       />
       {loading && <p className="text-gray-600 mt-2">Loading...</p>}
       {error && <p className="text-red-600 mt-2">Error: {error.message}</p>}
+      {offline && !query && <p className="text-yellow-600 mt-2">You are offline. Showing cached animations.</p>}
       {noAnimationsFound && <p className="text-gray-600 mt-2">No animations found.</p>}
     </div>
   );

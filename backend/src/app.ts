@@ -8,10 +8,9 @@ import prisma from './prisma';
 import typeDefs from './schema/typeDefs';
 import resolvers from './resolvers';
 import path from 'path';
+import { errorHandler, handleUncaughtErrors } from './middleware/errorHandler';
 
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(",") || [];
-
-console.log(ALLOWED_ORIGINS)
 
 const schema = makeExecutableSchema({
   typeDefs,
@@ -49,5 +48,8 @@ const startApolloServer = async (app: express.Express) => {
 
   return { app, server };
 };
+
+// Error handling middleware should be added after all other middleware and routes
+app.use(errorHandler);
 
 export { app, startApolloServer };

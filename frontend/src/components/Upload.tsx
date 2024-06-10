@@ -1,7 +1,6 @@
 // src/components/Upload.tsx
 import React, { useState, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
-
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
   addPendingUpload,
@@ -12,7 +11,6 @@ import { addAnimationState } from "../store/animationsSlice";
 import { LottieAnimation } from "../types";
 import { customFetch } from "../utils/customFetch";
 import { UPLOAD_ANIMATION_QUERY } from "../graphql/mutations";
-// import { useNavigate } from 'react-router-dom';
 
 const Upload: React.FC = () => {
   const [title, setTitle] = useState("");
@@ -20,86 +18,81 @@ const Upload: React.FC = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const offline = useAppSelector(
     (state: RootState) => state.animations.offline
   );
   const dispatch = useAppDispatch();
-  // const navigate = useNavigate();
   const GRAPHQL_API_URL = import.meta.env.VITE_GRAPHQL_API_URL;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSuccessMessage("");
+    setErrorMessage("");
     if (!file) {
-      setSuccessMessage("Please select a file to upload.");
+      setErrorMessage("Please select a file to upload.");
       return;
     }
-  
+
     if (!title || !description || !tags.length) {
-      setSuccessMessage("Please fill in all the required fields.");
+      setErrorMessage("Please fill in all the required fields.");
       return;
     }
-  
+
     const reader = new FileReader();
     reader.onload = async (event) => {
-      const fileData = JSON.parse(event.target?.result as string);
-  
-      const uniqueID = uuidv4(); // Generate a UUID
-      const timestamp = new Date().toISOString();
-  
-      const animationData: LottieAnimation = {
-        id: uniqueID,
-        title,
-        description,
-        tags,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-        file,
-        filename: file.name,
-        url: "", // Initialize url property
-        metadata: fileData, // Store full animation JSON here
-      };
-  
-      if (offline) {
-        await handleOfflineUpload(animationData);
-      } else {
-        await handleOnlineUpload(animationData, file);
+      try {
+        const fileData = JSON.parse(event.target?.result as string);
+        const uniqueID = uuidv4(); // Generate a UUID
+        const timestamp = new Date().toISOString();
+
+        const animationData: LottieAnimation = {
+          id: uniqueID,
+          title,
+          description,
+          tags,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+          file,
+          filename: file.name,
+          url: "", // Initialize url property
+          metadata: fileData, // Store full animation JSON here
+        };
+
+        if (offline) {
+          await handleOfflineUpload(animationData);
+        } else {
+          await handleOnlineUpload(animationData, file);
+        }
+
+        clearForm();
+      } catch (error) {
+        console.error('Error reading file:', error);
+        setErrorMessage("Error reading file. Please ensure it is a valid JSON file.");
       }
-  
-      clearForm();
     };
-  
+
     reader.readAsText(file);
   };
-  
 
-  const handleOfflineUpload = async (
-    animationData: LottieAnimation
-  ) => {
-    if ("serviceWorker" in navigator && "SyncManager" in window) {
-      navigator.serviceWorker.ready.then((registration) => {
-        return registration.sync
-          .register("sync-pending-uploads")
-          .then(async () => {
-            await addPendingUpload(animationData);
-            dispatch(addAnimationState(animationData));
-            await addAnimationToDB(animationData); // Save to IndexedDB
-            //await addLottieFile(animationData.id, fileData); // Use a unique ID or timestamp
-            setSuccessMessage(
-              "Animation uploaded offline. It will be synced when you are online."
-            );
-          })
-          .catch((err) => {
-            console.error("Sync registration failed:", err);
-          });
-      });
+  const handleOfflineUpload = async (animationData: LottieAnimation) => {
+    try {
+      if ("serviceWorker" in navigator && "SyncManager" in window) {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.sync.register("sync-pending-uploads");
+        await addPendingUpload(animationData);
+        dispatch(addAnimationState(animationData));
+        await addAnimationToDB(animationData); // Save to IndexedDB
+        setSuccessMessage("Animation uploaded offline. It will be synced when you are online.");
+      }
+    } catch (err) {
+      console.error("Sync registration failed:", err);
+      setErrorMessage("Offline upload failed. Please try again.");
     }
   };
 
-  const handleOnlineUpload = async (
-    animationData: LottieAnimation,
-    file: File
-  ) => {
+  const handleOnlineUpload = async (animationData: LottieAnimation, file: File) => {
     try {
       const operations = {
         query: UPLOAD_ANIMATION_QUERY,
@@ -112,7 +105,7 @@ const Upload: React.FC = () => {
         },
       };
       const map = { "0": ["variables.file"] };
-  
+
       const result = await customFetch(GRAPHQL_API_URL, operations, map, file);
       if (result.data) {
         const savedAnimation = {
@@ -122,17 +115,15 @@ const Upload: React.FC = () => {
         };
         dispatch(addAnimationState(savedAnimation));
         await addAnimationToDB(savedAnimation);
-        //await addLottieFile(savedAnimation.id, fileData);
         setSuccessMessage("Animation uploaded successfully!");
       } else {
         throw new Error('Upload failed');
       }
     } catch (error) {
       console.error('Online upload failed:', error);
-      setSuccessMessage("Error uploading animation. Please try again.");
+      setErrorMessage("Error uploading animation. Please try again.");
     }
   };
-  
 
   const clearForm = () => {
     setTitle("");
@@ -185,6 +176,9 @@ const Upload: React.FC = () => {
       </form>
       {successMessage && (
         <p className="text-green-600 mt-2">{successMessage}</p>
+      )}
+      {errorMessage && (
+        <p className="text-red-600 mt-2">{errorMessage}</p>
       )}
     </div>
   );

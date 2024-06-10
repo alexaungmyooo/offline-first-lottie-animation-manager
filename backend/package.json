@@ -20,7 +20,8 @@
     "dotenv": "^16.4.5",
     "graphql": "^16.8.1",
     "graphql-upload-ts": "^2.1.2",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "winston": "^3.13.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
