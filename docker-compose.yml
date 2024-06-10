@@ -24,6 +24,7 @@ services:
       - DATABASE_URL=mysql://lottieuser:lottiepassword@db:3306/lottiefiles
       - SERVER_PORT=4000
       - BASE_URL=http://localhost:4000
+      - WAIT_HOSTS=mysql:3306
     volumes:
       - ./backend/uploads:/app/uploads  # Mount the uploads directory
     depends_on:
