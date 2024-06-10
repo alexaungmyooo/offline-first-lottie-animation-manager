@@ -1,45 +1,34 @@
 // src/errorHandler.ts
 import { Request, Response, NextFunction } from 'express';
-import logger from '../logger';
-import http from 'http';
+import logger from '../logger'; // Update to the correct path
+import { UserInputError, AuthenticationError, ForbiddenError, InternalServerError } from '../errors';
 
 export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   logger.error(err);
 
-  if (err.name === 'ValidationError') {
-    return res.status(400).json({
-      errors: err.errors,
-    });
-  }
-
-  if (err.message.includes('The CORS policy')) {
-    return res.status(403).json({
-      errors: [{ message: err.message }],
-    });
-  }
-
-  if (err.extensions?.code === 'USER_INPUT_ERROR') {
+  if (err instanceof UserInputError) {
     return res.status(400).json({ errors: [{ message: err.message }] });
   }
 
-  if (err.extensions?.code === 'AUTHENTICATION_ERROR') {
+  if (err instanceof AuthenticationError) {
     return res.status(401).json({ errors: [{ message: err.message }] });
   }
 
-  if (err.extensions?.code === 'FORBIDDEN_ERROR') {
+  if (err instanceof ForbiddenError) {
     return res.status(403).json({ errors: [{ message: err.message }] });
   }
 
-  if (err.extensions?.code === 'INTERNAL_SERVER_ERROR') {
+  if (err instanceof InternalServerError) {
     return res.status(500).json({ errors: [{ message: err.message }] });
   }
 
-  res.status(500).json({
-    errors: [{ message: 'Internal Server Error' }],
-  });
+  // Fallback for unhandled errors
+  res.status(500).json({ errors: [{ message: 'Internal Server Error' }] });
 };
 
 // Graceful shutdown
+import http from 'http';
+
 export const handleUncaughtErrors = (server: http.Server, prisma: any) => {
   process.on('uncaughtException', async (err) => {
     logger.error('Uncaught Exception. Shutting down...', err);
