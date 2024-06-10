@@ -37,6 +37,7 @@ ehthumbs.db
 .env
 .env.local
 .env.*.local
+.env.production
 
 # IDEs and editors
 .idea/
@@ -89,6 +90,3 @@ coverage/
 # Ignore uploads folder
 uploads/
 
-# Environment variables
-.env
-.env.production
