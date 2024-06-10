@@ -44,5 +44,5 @@ RUN chmod +x /wait
 
 # CMD /wait && yarn start:migrate:prod
 # Define the command to run the application
-CMD /wait db:3306 && yarn start:migrate:prod
+CMD /wait && yarn start:migrate:prod
 
