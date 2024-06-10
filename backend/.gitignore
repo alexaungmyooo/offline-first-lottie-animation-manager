@@ -88,3 +88,7 @@ coverage/
 
 # Ignore uploads folder
 uploads/
+
+# Environment variables
+.env
+.env.production
